@@ -1,3 +1,3 @@
-export * from './BooksDetailsPage/BooksDetailsPage';
-export * from './HomePage/HomePage';
-export * from './NotFoundPage/NotFoundPage';
+export * from './BooksDetailsPage';
+export * from './HomePage';
+export * from './NotFoundPage';
