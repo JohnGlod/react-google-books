@@ -39,6 +39,7 @@ export const HomePage = observer(() => {
             alignItems: 'center',
           }}
         >
+          <Typography>Found {booksStore.totalItems} results</Typography>
           <CardList list={booksStore.books} />
           <Button variant="outlined" sx={{ width: '50%' }} onClick={booksStore.getMoreBooks}>
             Load more

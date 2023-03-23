@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
-import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 import { Card, CardActionArea, CardContent, CardMedia, Typography } from '@mui/material';
 import { IBook } from '../api/types';
 
-export const CardItem = observer((props: IBook) => {
+export const CardItem = (props: IBook) => {
   const { volumeInfo, id } = props;
   const data = toJS(volumeInfo);
   const { imageLinks, title, authors, categories } = data;
@@ -31,4 +30,4 @@ export const CardItem = observer((props: IBook) => {
       </CardActionArea>
     </Card>
   );
-});
+};

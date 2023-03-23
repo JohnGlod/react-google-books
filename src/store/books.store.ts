@@ -17,6 +17,7 @@ class Store {
   startIndex = 0;
   category = 'all';
   sorted = 'relevance';
+  totalItems = 0;
 
   setQuery = (value: string) => {
     this.query = value;
@@ -27,6 +28,13 @@ class Store {
   setCategory = (value: string) => {
     this.category = value;
   };
+
+  private getFilteredBooks(books: IBook[]): IBook[] {
+    return books.filter((book) => {
+      if (this.category === 'all') return true;
+      return book.volumeInfo.categories?.includes(this.category.charAt(0).toUpperCase() + this.category.slice(1));
+    });
+  }
 
   onSearch = async () => {
     try {
@@ -39,8 +47,9 @@ class Store {
       if ('error' in result) {
         this.errorMessage = result.error.message;
       } else if ('items' in result) {
+        this.totalItems = result.totalItems;
         this.pageCount = Math.ceil(result.totalItems / LIMIT);
-        this.books = result.items;
+        this.books = this.getFilteredBooks(result.items);
       }
     } catch (error) {
       this.errorMessage = error as string;
@@ -60,7 +69,7 @@ class Store {
         if ('error' in result) {
           this.errorMessage = result.error.message;
         } else if ('items' in result) {
-          this.books = this.books.concat(result.items);
+          this.books = this.books.concat(this.getFilteredBooks(result.items));
         }
       }
     } catch (error) {
