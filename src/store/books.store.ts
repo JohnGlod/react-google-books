@@ -51,7 +51,8 @@ class Store {
     result:
       | ISuccessResponseGoogleBooksApi
       | IFailedResponseGoogleBooksApi
-      | IBook
+      | IBook,
+    reset: boolean
   ) {
     if ('error' in result) {
       runInAction(() => {
@@ -61,7 +62,9 @@ class Store {
       runInAction(() => {
         this.totalItems = result.totalItems;
         this.pageCount = Math.ceil(result.totalItems / LIMIT);
-        this.books = this.getFilteredBooks(result.items);
+        this.books = reset
+          ? this.getFilteredBooks(result.items)
+          : [...this.books, ...this.getFilteredBooks(result.items)];
       });
     }
   }
@@ -75,7 +78,7 @@ class Store {
         this.category,
         this.sorted
       );
-      this.handleSearchResult(result);
+      this.handleSearchResult(result, startIndex === 0);
     } catch (error) {
       runInAction(() => {
         this.errorMessage = (error as Error).message;
