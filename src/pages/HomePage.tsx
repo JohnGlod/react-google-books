@@ -9,15 +9,18 @@ export const HomePage = observer(() => {
   return (
     <>
       {booksStore.errorMessage && (
-        <Box component="div" sx={{ p: 2, border: '1px dashed red', mb: '1rem' }}>
-          <Typography variant="h5" component="span" color="red">
+        <Box
+          component='div'
+          sx={{ p: 2, border: '1px dashed red', mb: '1rem' }}
+        >
+          <Typography variant='h5' component='span' color='red'>
             {booksStore.errorMessage}
           </Typography>
         </Box>
       )}
       {booksStore.isLoading && (
         <Box
-          component="div"
+          component='div'
           sx={{
             display: 'flex',
             alignItems: 'center',
@@ -25,13 +28,13 @@ export const HomePage = observer(() => {
             p: 2,
           }}
         >
-          <CircularProgress color="inherit" />
+          <CircularProgress color='inherit' />
         </Box>
       )}
 
-      {booksStore.books.length > 0 && (
+      {booksStore.books && (
         <Box
-          component="div"
+          component='div'
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -39,9 +42,20 @@ export const HomePage = observer(() => {
             alignItems: 'center',
           }}
         >
+          {booksStore.books.length === 0 && (
+            <Typography>
+              The result obtained does not meet the filtering requirements,
+              please upload more &#128532;
+            </Typography>
+          )}
           <Typography>Found {booksStore.totalItems} results</Typography>
           <CardList list={booksStore.books} />
-          <Button variant="outlined" sx={{ width: '50%' }} onClick={booksStore.getMoreBooks} disabled={booksStore.isLoading}>
+          <Button
+            variant='outlined'
+            sx={{ width: '50%' }}
+            onClick={booksStore.getMoreBooks}
+            disabled={booksStore.isLoading}
+          >
             Load more
           </Button>
         </Box>
