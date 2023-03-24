@@ -1,4 +1,4 @@
-import { BASE_URL } from '../constants';
+import { BASE_URL, LIMIT } from '../constants';
 import { IBook, IFailedResponseGoogleBooksApi, ISuccessResponseGoogleBooksApi } from './types';
 
 class Api {
@@ -14,11 +14,17 @@ class Api {
     }
   }
 
-  findAll(query: string, start = 0, category: string, sorted: string) {
+  findAll(query: string, startIndex = 0, category: string, orderBy: string) {
+    const paramsObj = {
+      maxResults: String(LIMIT),
+      printType: 'books',
+      startIndex: String(startIndex),
+      orderBy,
+    };
+
+    const searchParams = new URLSearchParams(paramsObj);
     return this.performRequest(
-      `${this.url}?q=${
-        category !== 'all' ? `${query}+subject:${category}` : `intitle:${query}`
-      }&orderBy=${sorted}&startIndex=${start}&maxResults=30&printType=books`,
+      `${this.url}?q=${category !== 'all' ? `${query}+subject:${category}` : `intitle:${query}`}&${searchParams.toString()}`,
     );
   }
 
