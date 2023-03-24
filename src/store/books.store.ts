@@ -1,6 +1,6 @@
-import { makeAutoObservable, onBecomeObserved } from 'mobx';
+import { makeAutoObservable, onBecomeObserved, runInAction } from 'mobx';
 import api from '../api';
-import { IBook } from '../api/types';
+import { IBook, IFailedResponseGoogleBooksApi, ISuccessResponseGoogleBooksApi } from '../api/types';
 import { LIMIT } from '../constants';
 
 class Store {
@@ -32,50 +32,67 @@ class Store {
   private getFilteredBooks(books: IBook[]): IBook[] {
     return books.filter((book) => {
       if (this.category === 'all') return true;
-      return book.volumeInfo.categories?.includes(this.category.charAt(0).toUpperCase() + this.category.slice(1));
+      return book.volumeInfo.categories?.includes(
+        this.category.charAt(0).toUpperCase() + this.category.slice(1)
+      );
     });
   }
 
-  onSearch = async () => {
-    try {
-      this.isLoading = true;
-      this.errorMessage = '';
-      this.startIndex = 0;
+  private clear(){
+    this.isLoading = true;
+    this.errorMessage = '';
+  }
+  
 
-      const result = await api.findAll(this.query, this.startIndex, this.category, this.sorted);
+  private async fetchBooks(startIndex: number) {
+    const result = await api.findAll(
+      this.query,
+      startIndex,
+      this.category,
+      this.sorted
+    );
+    return result;
+  }
 
-      if ('error' in result) {
+
+  private async handleSearchResult(result: ISuccessResponseGoogleBooksApi | IFailedResponseGoogleBooksApi | IBook) {
+    if ('error' in result) {
+      runInAction(() => {
         this.errorMessage = result.error.message;
-      } else if ('items' in result) {
+      });
+    } else if ('items' in result) {
+      runInAction(() => {
         this.totalItems = result.totalItems;
         this.pageCount = Math.ceil(result.totalItems / LIMIT);
         this.books = this.getFilteredBooks(result.items);
-      }
-    } catch (error) {
-      this.errorMessage = error as string;
-    } finally {
-      this.isLoading = false;
+      });
     }
-  };
-  getMoreBooks = async () => {
-    try {
-      this.isLoading = true;
-      this.errorMessage = '';
-      this.startIndex += 1;
-      const secondPage = this.startIndex;
-      if (secondPage < this.pageCount) {
-        const result = await api.findAll(this.query, secondPage * 30, this.category, this.sorted);
+  }
 
-        if ('error' in result) {
-          this.errorMessage = result.error.message;
-        } else if ('items' in result) {
-          this.books = this.books.concat(this.getFilteredBooks(result.items));
-        }
-      }
+  private async searchBooks(startIndex: number) {
+    this.clear();
+    try {
+      const result = await this.fetchBooks(startIndex);
+      await this.handleSearchResult(result);
     } catch (error) {
-      this.errorMessage = error as string;
+      runInAction(() => {
+        this.errorMessage = error as string;
+      });
     } finally {
-      this.isLoading = false;
+      runInAction(() => {
+        this.isLoading = false;
+      });
+    }
+  }
+
+  onSearch = async () => {
+    await this.searchBooks(0);
+  };
+
+  getMoreBooks = async () => { 
+    const secondPage = this.startIndex += 1;
+    if (secondPage < this.pageCount) {
+      await this.searchBooks(secondPage * 30);
     }
   };
 }

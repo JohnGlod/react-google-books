@@ -4,6 +4,7 @@ import { Box, Typography, Button, CircularProgress } from '@mui/material';
 
 import { booksStore } from '../store/books.store';
 import { CardList } from '../components';
+import { LIMIT } from '../constants';
 
 export const HomePage = observer(() => {
   return (
@@ -54,7 +55,7 @@ export const HomePage = observer(() => {
             variant='outlined'
             sx={{ width: '50%' }}
             onClick={booksStore.getMoreBooks}
-            disabled={booksStore.isLoading}
+            disabled={booksStore.isLoading || booksStore.totalItems < LIMIT}
           >
             Load more
           </Button>
