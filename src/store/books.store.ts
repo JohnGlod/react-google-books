@@ -1,6 +1,10 @@
 import { makeAutoObservable, onBecomeObserved, runInAction } from 'mobx';
 import api from '../api';
-import { IBook, IFailedResponseGoogleBooksApi, ISuccessResponseGoogleBooksApi } from '../api/types';
+import {
+  IBook,
+  IFailedResponseGoogleBooksApi,
+  ISuccessResponseGoogleBooksApi,
+} from '../api/types';
 import { LIMIT } from '../constants';
 
 class Store {
@@ -38,24 +42,17 @@ class Store {
     });
   }
 
-  private clear(){
+  private clear() {
     this.isLoading = true;
     this.errorMessage = '';
   }
-  
 
-  private async fetchBooks(startIndex: number) {
-    const result = await api.findAll(
-      this.query,
-      startIndex,
-      this.category,
-      this.sorted
-    );
-    return result;
-  }
-
-
-  private async handleSearchResult(result: ISuccessResponseGoogleBooksApi | IFailedResponseGoogleBooksApi | IBook) {
+  private handleSearchResult(
+    result:
+      | ISuccessResponseGoogleBooksApi
+      | IFailedResponseGoogleBooksApi
+      | IBook
+  ) {
     if ('error' in result) {
       runInAction(() => {
         this.errorMessage = result.error.message;
@@ -72,11 +69,16 @@ class Store {
   private async searchBooks(startIndex: number) {
     this.clear();
     try {
-      const result = await this.fetchBooks(startIndex);
-      await this.handleSearchResult(result);
+      const result = await api.findAll(
+        this.query,
+        startIndex,
+        this.category,
+        this.sorted
+      );
+      this.handleSearchResult(result);
     } catch (error) {
       runInAction(() => {
-        this.errorMessage = error as string;
+        this.errorMessage = (error as Error).message;
       });
     } finally {
       runInAction(() => {
@@ -89,8 +91,8 @@ class Store {
     await this.searchBooks(0);
   };
 
-  getMoreBooks = async () => { 
-    const secondPage = this.startIndex += 1;
+  getMoreBooks = async () => {
+    const secondPage = (this.startIndex += 1);
     if (secondPage < this.pageCount) {
       await this.searchBooks(secondPage * 30);
     }
